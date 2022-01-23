@@ -1,0 +1,229 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:chat_app/models/ChatListItem.dart';
+import 'package:chat_app/models/chatlistModel.dart';
+import 'package:chat_app/models/meconnectedModel.dart';
+import 'package:chat_app/models/messageModel.dart';
+import 'package:chat_app/models/newuserconnectedModel.dart';
+import 'package:chat_app/models/receiveMessageFrom.dart';
+import 'package:chat_app/models/recievemessageTo.dart';
+import 'package:chat_app/utils/removeMessageExtraChar.dart';
+import 'package:chat_app/widgets/chatAppbarWidget.dart';
+import 'package:chat_app/widgets/chatMessageListWidget.dart';
+import 'package:chat_app/widgets/chatTypeMessageWidget.dart';
+import 'package:flutter/material.dart';
+import 'package:signalr_core/signalr_core.dart';
+
+class ChatPage extends StatefulWidget {
+  //final String userName;
+  final ChatListModel person;
+  final String currentUserId;
+
+  const ChatPage(this.person, this.currentUserId, {Key? key}) : super(key: key);
+
+  @override
+  _ChatPageState createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+  @override
+  void initState() {
+    super.initState();
+    //  openSignalRConnection();
+  }
+
+// pc - male
+//mobile -female
+
+  //String toUserId = 'qgX8QmC1Vr0dCFyaBebChw';
+
+  // String UserName =
+  //     "e37b5e8d-a71f-471d-9785-5b72db57cca6_no-photo-female.jpg_female_Mahmuda Akhtar_26_5ft 3in_Muslim_Bachelors_UnMarried_approved";
+  String UserName =
+      "5814271d-8f57-4ea9-b693-7ae3fbb48688_26334db9-d878-4cc3-b9f2-226b6966c213.jpg_male_Riyazul Islam_51_5ft 7in_Muslim_Bachelors_UnMarried_approved";
+
+  bool isMeOffline = false;
+  bool isMeInvisible = false;
+
+  ScrollController chatListScrollController = new ScrollController();
+  TextEditingController messageTextController = TextEditingController();
+
+  submitMessageFunction() async {
+    var messageText = removeMessageExtraChar(messageTextController.text);
+    await connection
+        .invoke('SendMessage', args: [widget.person.connectionId, messageText]);
+    messageTextController.text = "";
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      chatListScrollController.animateTo(
+          chatListScrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.ease);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Row(
+          children: <Widget>[
+            CircleAvatar(
+              backgroundImage: NetworkImage(widget.person.chatimage!),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 3),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      widget.person.chatrealname!,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 20,
+                      ),
+                    ),
+                    FittedBox(
+                      child: Text(
+                        "last seen today at 12:22",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.videocam,
+              color: Colors.white,
+            ),
+            onPressed: null,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.call,
+              color: Colors.white,
+            ),
+            onPressed: null,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.more_vert,
+              color: Colors.white,
+            ),
+            onPressed: null,
+          )
+        ],
+      ),
+      body: Container(
+        height: size.height,
+        width: size.width,
+        child: Column(
+          children: [
+            // chatAppbarWidget(size, context),
+            chatMessageWidget(
+              chatListScrollController,
+              messageModel,
+              widget.currentUserId,
+            ), // This will print out all the messages from the server In the app chat list
+            // chatTypeMessageWidget(messageTextController, submitMessageFunction)
+          ],
+        ),
+      ),
+    );
+  }
+
+  //set url and configs
+  final connection = HubConnectionBuilder()
+      .withUrl(
+          'https://chathub.bdmarriage.com/chatHub',
+          HttpConnectionOptions(
+            logging: (level, message) => print(message),
+          ))
+      .build();
+
+  //connect to signalR
+  //https://chathub.bdmarriage.com/chatHub
+  //http://192.168.1.3:5000/chatHub
+  Future<void> openSignalRConnection() async {
+    await connection.start();
+
+    connection.on('ReceiveMessage', (message) {
+      _handleIncommingDriverLocation(message);
+    });
+
+    // connection.on('MeConnected', (message) {
+    //   _handleMeConnected(message);
+    // });
+    // connection.on('NewUserConnected', (message) {
+    //   _handleNewUserConnected(message);
+    // });
+
+    //Calling join user function in the server
+
+    // await connection
+    //     .invoke('OnConnect', args: [UserName, isMeOffline, isMeInvisible]);
+  }
+
+  //get messages
+  List<MessageModel> messageModel = [];
+
+  List<MeconnectedModel> meconnectedModel = [];
+  List<NewuserConnectedModel> newuserConnectedModel = [];
+
+  Future<void> _handleIncommingDriverLocation(List<dynamic>? args) async {
+    print(args);
+
+    if (args != null) {
+      setState(() {
+        messageModel.add(MessageModel(
+            connectionId: args[0],
+            fromUserName: args[1],
+            toUserName: args[2],
+            message: args[3],
+            isMe: args[4],
+            createDate: args[5]));
+      });
+    }
+  }
+
+  // Future<void> _handleMeConnected(List<dynamic>? args) async {
+  //   var sondata = jsonEncode(args);
+  //   currentUserId = args![0];
+  //   print('currentuser==' + currentUserId);
+
+  //   // print(sondata);
+  //   // print(args); // TODO :-  START FROM HERE TOMORROW
+
+  //   if (args[1].isNotEmpty) {
+  //     var jsonResponse = json.encode(args[1][0]);
+  //     MeconnectedModel data = MeconnectedModel.fromJson(jsonResponse);
+  //     setState(() {
+  //       meconnectedModel.add(data);
+  //     });
+  //   }
+  //   if (args[1].isEmpty) {
+  //     print("no one in chat right now");
+  //   }
+  // }
+//nthIndex in flutter
+
+  Future<void> _handleNewUserConnected(List<dynamic>? args) async {
+    if (args!.isNotEmpty) {
+      var jsonResponse = json.encode(args);
+      print(jsonResponse);
+    }
+  }
+}

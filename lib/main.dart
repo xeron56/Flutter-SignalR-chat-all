@@ -1,3 +1,5 @@
+import 'package:chat_app/pages/ChatsTab.dart';
+
 import 'package:chat_app/pages/loginPage.dart';
 import 'package:chat_app/utils/appTheme.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: ChatsTab(),
     );
   }
 }

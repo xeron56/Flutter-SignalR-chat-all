@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 Widget chatMessageWidget(ScrollController chatListScrollController,
-    List<MessageModel> messageModel, int currentUserId) {
+    List<MessageModel> messageModel, String currentUserId) {
   return Expanded(
       child: Container(
     color: Colors.white,
@@ -22,23 +22,28 @@ Widget chatMessageWidget(ScrollController chatListScrollController,
   ));
 }
 
-Widget chatItemWidget(MessageModel e, int currentUserId) {
-  bool isMyChat = e.userId == currentUserId;
-  return e.userId == 0
-      ? systemMessageWidget(e.messageText!)
-      : Padding(
-          padding: const EdgeInsets.only(left: 12, right: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              isMyChat
-                  ? messageTime(isMyChat, e)
-                  : userAvatar(e.userId!, e.userName!),
-              messageTextAndName(isMyChat, e.messageText!, e.userName!),
-              if (!isMyChat) messageTime(isMyChat, e)
-            ],
-          ),
-        );
+Widget chatItemWidget(MessageModel e, String currentUserId) {
+  bool isMyChat = e.isMe!;
+  // make ismychat always opposite of isMe
+  // assert(!isMyChat);
+  print(isMyChat);
+
+  return Padding(
+    padding: const EdgeInsets.only(left: 12, right: 12),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        isMyChat
+            ? messageTime(isMyChat, e)
+            : userAvatar(e.connectionId!, e.fromUserName!, e.fromUserImage!),
+        isMyChat
+            ? messageTextAndName(isMyChat, e.message!, e.toUserName!)
+            : messageTextAndName(isMyChat, e.message!, e.fromUserName!),
+        //messageTextAndName(isMyChat, e.message!, e.userName!),
+        if (!isMyChat) messageTime(isMyChat, e)
+      ],
+    ),
+  );
 }
 
 Widget systemMessageWidget(String text) {
@@ -55,19 +60,19 @@ Widget systemMessageWidget(String text) {
   );
 }
 
-Widget userAvatar(int userId, String userName) {
+Widget userAvatar(String userId, String userName, String userImageUrl) {
   Color avatarColor = Colors.greenAccent;
-  if (userId < 10000) {
-    avatarColor = Color(0xFFffadad);
-  } else if (userId < 100000) {
-    avatarColor = Color(0xFFffd6a5);
-  } else if (userId < 200000) {
-    avatarColor = Color(0xFFfdffb6);
-  } else if (userId < 700000) {
-    avatarColor = Color(0xFFcaffbf);
-  } else if (userId < 1000000) {
-    avatarColor = Colors.blueAccent;
-  }
+  // if (userId < 10000) {
+  //   avatarColor = Color(0xFFffadad);
+  // } else if (userId < 100000) {
+  //   avatarColor = Color(0xFFffd6a5);
+  // } else if (userId < 200000) {
+  //   avatarColor = Color(0xFFfdffb6);
+  // } else if (userId < 700000) {
+  //   avatarColor = Color(0xFFcaffbf);
+  // } else if (userId < 1000000) {
+  //   avatarColor = Colors.blueAccent;
+  // }
 
   return Container(
     width: 40,
@@ -75,12 +80,20 @@ Widget userAvatar(int userId, String userName) {
     margin: EdgeInsets.only(bottom: 8),
     decoration: BoxDecoration(shape: BoxShape.circle, color: avatarColor),
     child: Center(
-      child: Text(
-        userName.substring(0, 1).toUpperCase(),
-        style: TextStyle(
-            fontFamily: AppTheme.secondFontName,
-            fontSize: 18,
-            color: Colors.black87),
+      child:
+          //  Text(
+          //   userName.substring(0, 1).toUpperCase(),
+          //   style: TextStyle(
+          //       fontFamily: AppTheme.secondFontName,
+          //       fontSize: 18,
+          //       color: Colors.black87),
+          // ),
+          // add network image
+
+          //add circular network image
+          CircleAvatar(
+        backgroundImage: NetworkImage(userImageUrl),
+        radius: 20,
       ),
     ),
   );
@@ -121,10 +134,13 @@ Widget messageTextAndName(bool isMyChat, String messageText, String userName) {
 }
 
 Widget messageTime(bool isMyChat, MessageModel e) {
-  var parsedDate = DateTime.parse(e.createDate!);
-  var timeText = parsedDate.hour.toString() +
-      " : " +
-      parsedDate.minute.toString().padLeft(2, '0');
+  // var parsedDate = DateTime.parse(e.createDate!);
+  // var timeText = parsedDate.hour.toString() +
+  //     " : " +
+  //     parsedDate.minute.toString().padLeft(2, '0');
+  //get current time in flutter
+
+  var timeText = '9am';
   return Container(
       margin: EdgeInsets.only(
           left: isMyChat ? 48 : 8, bottom: 12, right: isMyChat ? 0 : 16),

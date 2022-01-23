@@ -2,7 +2,7 @@ import 'package:chat_app/utils/appTheme.dart';
 import 'package:flutter/material.dart';
 
 Widget chatTypeMessageWidget(TextEditingController messageTextController,
-    Function submitMessageFunction) {
+    Function submitMessageFunction, String conid) {
   return ConstrainedBox(
     constraints: BoxConstraints(
       minHeight: 60,
@@ -50,7 +50,7 @@ Widget chatTypeMessageWidget(TextEditingController messageTextController,
             ),
           ),
           GestureDetector(
-            onTap: () => submitMessageFunction(),
+            onTap: () => submitMessageFunction(conid),
             child: Padding(
               padding: EdgeInsets.only(right: 12),
               child: Icon(
