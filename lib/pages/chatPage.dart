@@ -30,7 +30,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    //  openSignalRConnection();
+    openSignalRConnection();
   }
 
 // pc - male
@@ -49,7 +49,7 @@ class _ChatPageState extends State<ChatPage> {
   ScrollController chatListScrollController = new ScrollController();
   TextEditingController messageTextController = TextEditingController();
 
-  submitMessageFunction() async {
+  submitMessageFunction(String conid) async {
     var messageText = removeMessageExtraChar(messageTextController.text);
     await connection
         .invoke('SendMessage', args: [widget.person.connectionId, messageText]);
@@ -132,13 +132,14 @@ class _ChatPageState extends State<ChatPage> {
         width: size.width,
         child: Column(
           children: [
-            // chatAppbarWidget(size, context),
+            //chatAppbarWidget(size, context),
             chatMessageWidget(
               chatListScrollController,
               messageModel,
-              widget.currentUserId,
             ), // This will print out all the messages from the server In the app chat list
             // chatTypeMessageWidget(messageTextController, submitMessageFunction)
+            chatTypeMessageWidget(messageTextController, submitMessageFunction,
+                widget.person.connectionId!),
           ],
         ),
       ),
@@ -164,17 +165,17 @@ class _ChatPageState extends State<ChatPage> {
       _handleIncommingDriverLocation(message);
     });
 
-    // connection.on('MeConnected', (message) {
-    //   _handleMeConnected(message);
-    // });
+    connection.on('MeConnected', (message) {
+      _handleMeConnected(message);
+    });
     // connection.on('NewUserConnected', (message) {
     //   _handleNewUserConnected(message);
     // });
 
     //Calling join user function in the server
 
-    // await connection
-    //     .invoke('OnConnect', args: [UserName, isMeOffline, isMeInvisible]);
+    await connection
+        .invoke('OnConnect', args: [UserName, isMeOffline, isMeInvisible]);
   }
 
   //get messages
@@ -193,8 +194,7 @@ class _ChatPageState extends State<ChatPage> {
             fromUserName: args[1],
             toUserName: args[2],
             message: args[3],
-            isMe: args[4],
-            createDate: args[5]));
+            isMe: args[4]));
       });
     }
   }
@@ -219,6 +219,10 @@ class _ChatPageState extends State<ChatPage> {
   //   }
   // }
 //nthIndex in flutter
+  Future<void> _handleMeConnected(List<dynamic>? args) async {
+    var sondata = jsonEncode(args);
+    print(sondata);
+  }
 
   Future<void> _handleNewUserConnected(List<dynamic>? args) async {
     if (args!.isNotEmpty) {

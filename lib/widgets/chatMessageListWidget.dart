@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 Widget chatMessageWidget(ScrollController chatListScrollController,
-    List<MessageModel> messageModel, String currentUserId) {
+    List<MessageModel> messageModel) {
   return Expanded(
       child: Container(
     color: Colors.white,
@@ -12,7 +12,7 @@ Widget chatMessageWidget(ScrollController chatListScrollController,
       controller: chatListScrollController,
       child: Column(
         children: [
-          ...messageModel.map((e) => chatItemWidget(e, currentUserId)),
+          ...messageModel.map((e) => chatItemWidget(e)),
           SizedBox(
             height: 6,
           )
@@ -22,7 +22,7 @@ Widget chatMessageWidget(ScrollController chatListScrollController,
   ));
 }
 
-Widget chatItemWidget(MessageModel e, String currentUserId) {
+Widget chatItemWidget(MessageModel e) {
   bool isMyChat = e.isMe!;
   // make ismychat always opposite of isMe
   // assert(!isMyChat);

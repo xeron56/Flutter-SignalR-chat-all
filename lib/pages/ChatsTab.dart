@@ -4,6 +4,7 @@ import 'package:chat_app/models/chatlistModel.dart';
 import 'package:chat_app/models/meconnectedModel.dart';
 import 'package:chat_app/models/messageModel.dart';
 import 'package:chat_app/models/newuserconnectedModel.dart';
+import 'package:chat_app/pages/chatPage.dart';
 import 'package:chat_app/utils/appTheme.dart';
 
 import 'package:chat_app/utils/removeMessageExtraChar.dart';
@@ -59,167 +60,11 @@ class _ChatsTabState extends State<ChatsTab> {
                       backgroundImage:
                           NetworkImage(chatListModel[i].chatimage!),
                     ),
-                    onTap: () => showBarModalBottomSheet(
-                        context: context,
-                        builder: (context) => Scaffold(
-                              backgroundColor: Colors.white,
-                              appBar: AppBar(
-                                title: Row(
-                                  children: <Widget>[
-                                    CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                          chatListModel[i].chatimage!),
-                                    ),
-                                    Flexible(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(left: 3),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              chatListModel[i].chatrealname!,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            FittedBox(
-                                              child: Text(
-                                                "last seen today at 12:22",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w300,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                actions: <Widget>[
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.videocam,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: null,
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.call,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: null,
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.more_vert,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: null,
-                                  )
-                                ],
-                              ),
-                              body: Container(
-                                height: MediaQuery.of(context).size.height,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  children: [
-                                    // chatAppbarWidget(size, context),
-                                    chatMessageWidget(
-                                      chatListScrollController,
-                                      messageModel,
-                                      currentUserId,
-                                    ), // This will print out all the messages from the server In the app chat list
-                                    // chatTypeMessageWidget(
-                                    //     messageTextController,
-                                    //     submitMessageFunction,
-                                    //     chatListModel[i].connectionId!),
-                                    ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        minHeight: 60,
-                                        maxHeight: 120.0,
-                                      ),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.5),
-                                              spreadRadius: 5,
-                                              blurRadius: 20,
-                                              offset: Offset(0, 5),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 0, left: 0, right: 0),
-                                                child: ConstrainedBox(
-                                                  constraints: BoxConstraints(
-                                                    minHeight: 60,
-                                                    maxHeight: 120.0,
-                                                  ),
-                                                  child: TextField(
-                                                    controller:
-                                                        messageTextController,
-                                                    scrollPhysics:
-                                                        BouncingScrollPhysics(),
-                                                    maxLines: null,
-                                                    style: TextStyle(
-                                                        color: AppTheme
-                                                            .gradientColorFrom),
-                                                    decoration: InputDecoration(
-                                                      enabledBorder:
-                                                          InputBorder.none,
-                                                      filled: false,
-                                                      focusedBorder:
-                                                          InputBorder.none,
-                                                      hintText:
-                                                          "Type a message",
-                                                      hintStyle: TextStyle(
-                                                        color: AppTheme
-                                                            .gradientColorTo
-                                                            .withOpacity(.4),
-                                                      ),
-                                                      contentPadding:
-                                                          EdgeInsets.fromLTRB(
-                                                              16, 16, 32, 16),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            GestureDetector(
-                                              onTap: () =>
-                                                  submitMessageFunction(
-                                                      chatListModel[i]
-                                                          .connectionId!),
-                                              child: Padding(
-                                                padding:
-                                                    EdgeInsets.only(right: 12),
-                                                child: Icon(
-                                                  Icons.send,
-                                                  color: AppTheme
-                                                      .gradientColorFrom,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            )),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                ChatPage(chatListModel[i], currentUserId))),
                   );
                 },
                 separatorBuilder: (ctx, i) {
@@ -245,9 +90,9 @@ class _ChatsTabState extends State<ChatsTab> {
   Future<void> openSignalRConnection() async {
     await connection.start();
 
-    connection.on('ReceiveMessage', (message) {
-      _handleIncommingDriverLocation(message);
-    });
+    // connection.on('ReceiveMessage', (message) {
+    //   _handleIncommingDriverLocation(message);
+    // });
 
     connection.on('MeConnected', (message) {
       _handleMeConnected(message);
@@ -260,6 +105,8 @@ class _ChatsTabState extends State<ChatsTab> {
 
     await connection
         .invoke('OnConnect', args: [UserName, isMeOffline, isMeInvisible]);
+    //close signalR connection
+    await connection.stop();
   }
 
   List<MessageModel> messageModel = [];
@@ -402,10 +249,12 @@ class _ChatsTabState extends State<ChatsTab> {
     if (args[1].isEmpty) {
       print("no one in chat right now");
     }
+    //await connection.stop();
   }
 
   Future<void> _handleIncommingDriverLocation(List<dynamic>? args) async {
     print(args);
+    // stop the hub connection
 
     if (args != null) {
       var fname = getShortName(args[1]);
